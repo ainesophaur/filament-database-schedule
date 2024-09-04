@@ -86,12 +86,7 @@ class ScheduleResource extends Resource
                         ->label(__('filament-database-schedule::schedule.messages.custom'))
                         ->required()
                         ->visible(fn ($get) => $get('command') === 'custom' && config('filament-database-schedule.commands.enable_custom')),
-                    TableRepeater::make('params')->label(__('filament-database-schedule::schedule.fields.arguments'))
-                        ->schema([
-                            Forms\Components\TextInput::make('value')->label(fn ($get) => ucfirst($get('name')))->required(fn ($get) => $get('required')),
-                            Forms\Components\Hidden::make('name'),
-                        ])->addable(false)->withoutHeader()->deletable(false)->reorderable(false)
-                        ->columnSpan('full')->visible(fn ($get) => !empty(static::$commands->firstWhere('name', $get('command'))['arguments'])),
+                    ScheduleResource::getTableRepeaterField(),
                     TableRepeater::make('options_with_value')->label(__('filament-database-schedule::schedule.fields.options_with_value'))
                         ->schema([
                             Forms\Components\TextInput::make('value')->label(fn ($get) => ucfirst($get('name')))->required(fn ($get) => $get('required')),
@@ -242,5 +237,19 @@ class ScheduleResource extends Resource
             'edit' => Pages\EditSchedule::route('/{record}/edit'),
             'view' => Pages\ViewSchedule::route('/{record}'),
         ];
+    }
+
+    public static function getTableRepeaterField() {
+        static $tableRepeaterClass = class_exists('\Awcodes\TableRepeater\Components\TableRepeater') ?
+        \Awcodes\TableRepeater\Components\TableRepeater::class : \Awcodes\FilamentTableRepeater\Components\TableRepeater::class;
+
+
+        $tableRepeaterClass::make('params')
+            ->label(__('filament-database-schedule::schedule.fields.arguments'))
+            ->schema([
+                Forms\Components\TextInput::make('value')->label(fn ($get) => ucfirst($get('name')))->required(fn ($get) => $get('required')),
+                Forms\Components\Hidden::make('name'),
+            ])->addable(false)->withoutHeader()->deletable(false)->reorderable(false)
+            ->columnSpan('full')->visible(fn ($get) => !empty(static::$commands->firstWhere('name', $get('command'))['arguments']));
     }
 }
